@@ -2,8 +2,9 @@ const request = require("request-promise");
 const cheerio = require("cheerio");
 const fs = require("fs");
 const axios = require("axios");
+const cron = require("node-cron");
 
-const API_URL = process.env.SERVER_API || "http://127.0.0.1:5000";
+const API_URL = "https://dev-api.otohanviet.com";
 
 const URL = "https://dautomall.com/Price/PriceBody.do";
 const DETAIL_URL = "https://dautomall.com/BuyCar/BuyCarView.do";
@@ -531,6 +532,7 @@ var processGetClassDetail = async (brand, model, classid) => {
 // Brand -> Model -> Class -> Option
 ///////////////////////////////////////////////////////////////////////////
 var processGetClassDetailOption = async (brand, model, classid, option) => {
+    try{
     console.log("Processing: " + brand.code + " " + model.code + " " + classid.code + " " + option.code);
     console.log("Processing: " + brand.name + " " + model.name + " " + classid.name + " " + option.name);
     /**
@@ -567,6 +569,11 @@ var processGetClassDetailOption = async (brand, model, classid, option) => {
     var filename = "Data/" + brand.code + "." + model.code + "." + classid.code + "." + option.code + ".json";
     // await WriteFile2Disk(filename, total_details);
     await saveData(total_details);
+}
+catch(error)
+{
+    console.log(error)
+}
 };
 
 var processGetOptions = async (classid) => {
@@ -653,7 +660,7 @@ var CrawlDataOption = () => {
                 for (var classID = 0; classID < classCount; classID++) {
                     var classid = classes[classID];
                     var options = await processGetOptions(classid);
-
+                    
                     ////////////////////////////////////////////////////////
                     // Get detail of each Option
                     ////////////////////////////////////////////////////////
@@ -712,38 +719,48 @@ var TestDataOption = () => {
         ////////////////////////////////////////////////////////
         // Get detail of each Brand
         ////////////////////////////////////////////////////////
-        var brand = listBrands[2];
+        var brand = listBrands[7];
         var models = await getListCarModels(brand.code);
 
         ////////////////////////////////////////////////////////
         // Get detail of each Model
         ////////////////////////////////////////////////////////
-        var model = models[1];
+        var model = models[8];
         var classes = await getListCarClassess(model.code);
         // console.log(classes);
 
         ////////////////////////////////////////////////////////
         // Get detail of each Class
         ////////////////////////////////////////////////////////
-        var classid = classes[0];
+        var classid = classes[1];
         var options = await processGetOptions(classid);
 
         ////////////////////////////////////////////////////////
         // Get detail of each Option
         ////////////////////////////////////////////////////////
-        var option = options[2];
-        await processGetClassDetailOption(brand, model, classid, option);
+        var optionCount = options.length;
+        for (var optionID = 0; optionID < optionCount; optionID++) {
+            var option = options[optionID];
+            // var option = options[2];
+            await processGetClassDetailOption(brand, model, classid, option);
+        }
         console.log("==================================");
     });
 };
 
 var Run = async () => {
-    console.time("Processing");
+    console.time("Start crawling DAutoMall");
     // CrawlData();
     // TestData();
     await CrawlDataOption();
     // TestDataOption();
-    console.timeEnd("Processing");
+    console.timeEnd("Finish!!!");
 };
 
-Run();
+// start crawling at 0h:0m:0s
+const CRON_SCHEDULE = "0 0 * * *";
+
+cron.schedule(CRON_SCHEDULE, async () => {
+    Run();
+});
+
