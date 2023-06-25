@@ -4,6 +4,7 @@ const fs = require("fs");
 const axios = require("axios");
 const cron = require("node-cron");
 
+const SLEEP_INTERVAL = 1000;
 const API_URL = "https://dev-api.otohanviet.com";
 
 const URL = "https://dautomall.com/Price/PriceBody.do";
@@ -92,7 +93,7 @@ async function saveData(data) {
           console.log("error to save data", error);
         }
         finally{
-            await sleep(1000) /// waiting 1 second.
+            await sleep(SLEEP_INTERVAL) /// waiting 1 second.
         }
     }
 }
@@ -760,7 +761,11 @@ var Run = async () => {
 // start crawling at 0h:0m:0s
 const CRON_SCHEDULE = "0 0 * * *";
 
-cron.schedule(CRON_SCHEDULE, async () => {
+if (false) { 
     Run();
-});
-
+}
+else {
+    cron.schedule(CRON_SCHEDULE, async () => {
+        Run();
+    });
+}
