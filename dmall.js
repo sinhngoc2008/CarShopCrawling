@@ -84,6 +84,13 @@ async function saveData(data) {
     for(var i = 0; i < count; i++)
     {
         var input_data = data[i];
+        
+        // skip in case of noimage
+        if(input_data.image.length == 0) continue;
+
+        // skip in case of no price
+        if(input_data.price == 0) continue;
+
         var convertedData = await convertData(input_data);
         // console.log(convertedData);
         try {
