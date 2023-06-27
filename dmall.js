@@ -86,7 +86,7 @@ async function saveData(data) {
         var input_data = data[i];
         
         // skip in case of noimage
-        if(input_data.image.length == 0) continue;
+        if(input_data.image.length < 2) continue;
 
         // skip in case of no price
         if(input_data.price == 0) continue;
